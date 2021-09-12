@@ -20,8 +20,8 @@ from scipy.spatial import distance as dist
 
 def masked():
     def detect_and_predict_mask(frame, faceNet, maskNet):
-        # grab the dimensions of the frame and then construct a blob from it
-
+        # grab the dimensions of the frame and then construct a blob
+        # from it
         (h, w) = frame.shape[:2]
         blob = cv2.dnn.blobFromImage(frame, 1.0, (300, 300),
                                      (104.0, 177.0, 123.0))
@@ -115,7 +115,7 @@ def masked():
         # grab the frame from the threaded video stream and resize it
         # to have a maximum width of 400 pixels
         frame = vs.read()
-        frame = imutils.resize(frame, width=700)
+        frame = imutils.resize(frame, width=400)
 
         # detect faces in the frame and determine if they are wearing a
         # face mask or not
@@ -239,7 +239,7 @@ def Social_distance():
                         # the centroid pairs
                         serious.add(i)
                         serious.add(j)
-                        #playsound('face-mask-detection/beep-01a.wav')
+                        #playsound("Final/face-mask-detection/beep-01a.wav")
 
                     # update our abnormal set if the centroid distance is below max distance limit
                     if (D[i, j] < config.MAX_DISTANCE) and not serious:
@@ -269,7 +269,16 @@ def Social_distance():
             # draw (1) a bounding box around the person and (2) the
             # centroid coordinates of the person,
             cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
-  
+        # cv2.circle(frame, (cX, cY), 5, color, 2)
+
+        # draw some of the parameters
+        # Safe_Distance = "Safe distance: >{} px".format(config.MAX_DISTANCE)
+        # cv2.putText(frame, Safe_Distance, (470, frame.shape[0] - 25),
+        # 	cv2.FONT_HERSHEY_SIMPLEX, 0.60, (255, 0, 0), 2)
+        # Threshold = "Threshold limit: {}".format(config.Threshold)
+        # cv2.putText(frame, Threshold, (470, frame.shape[0] - 50),
+        # 	cv2.FONT_HERSHEY_SIMPLEX, 0.60, (255, 0, 0), 2)
+
         # draw the total number of social distancing violations on the output frame
         text = "Social Distance Violation: {}".format(len(serious))
         cv2.putText(frame, text, (10, frame.shape[0] - 70),
@@ -279,10 +288,18 @@ def Social_distance():
         cv2.putText(frame, text1, (10, frame.shape[0] - 20),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
 
+        # ------------------------------Alert function----------------------------------#
         if len(serious) >= config.Threshold:
             cv2.putText(frame, "-ALERT: Violations over limit-", (10, frame.shape[0] - 80),
                         cv2.FONT_HERSHEY_COMPLEX, 0.60, (0, 0, 255), 2)
-       
+            if config.ALERT:
+                print("")
+                print('[INFO] Sending mail...')
+                Mailer().send(config.MAIL)
+                print('[INFO] Mail sent')
+        # config.ALERT = False
+        # ------------------------------------------------------------------------------#
+        # check to see if the output frame should be displayed to our screen
         if args["display"] > 0:
             # show the output frame
             cv2.imshow("Real-Time Monitoring/Analysis Window", frame)
@@ -306,12 +323,13 @@ def Social_distance():
         if writer is not None:
             writer.write(frame)
 
-    # Display FPS information
+    # stop the timer and display FPS information
     fps.stop()
     print("===========================")
     print("[INFO] Elasped time: {:.2f}".format(fps.elapsed()))
     print("[INFO] Approx. FPS: {:.2f}".format(fps.fps()))
 
+    # close any open windows
     cv2.destroyAllWindows()
 
 
@@ -322,6 +340,15 @@ img_file = Image.open('im2.png')
 bg = ImageTk.PhotoImage(img_file)
 bgl = Label(root, image=bg)
 bgl.place(x=0, y=0)
+# bg = PhotoImage('img.jpg')
+# my_canvas = Canvas(root, width=800, height=500)
+# my_canvas.pack(fill="both", expand=True)
+#
+# # Set image in canvas
+# my_canvas.create_image(0, 0, image=bg, anchor="nw")
+#
+# # Add a label
+# my_canvas.create_text(400, 250, text="Team Vision!", font=("Helvetica", 50), fill="white")
 lbl = Label(root, text="Team vision", font=('Helvetica', 25, 'underline'))
 lbl.pack()
 bt2 = Button(root, text="Face mask Detection", bd=8, command=masked)
