@@ -5,8 +5,7 @@
 
 Implement social distancing detector and mask detector using OpenCV(Python), Deep Learning. It should monitor the same in Real-Time using live video stream/IP camera in OpenCV.
 
-**Prerequisite**
-* Python
+
 
 **Main Features**
 * Social distancing detector
